@@ -486,9 +486,16 @@ public class BlockedNumberProvider extends ContentProvider {
         if (getBlockSuppressionStatus().isSuppressed) {
             return BlockedNumberContract.STATUS_NOT_BLOCKED;
         }
+        /// M: Performance Improvement @{
+        /*
+         * Emergency number check may cost more time than blocked number check.
+         * In order to improve the performance, do blocked number check first.
+         */
+        /*
         if (isEmergencyNumber(phoneNumber)) {
             return BlockedNumberContract.STATUS_NOT_BLOCKED;
         }
+        */
 
         boolean isBlocked = false;
         int blockReason = BlockedNumberContract.STATUS_NOT_BLOCKED;
@@ -529,6 +536,12 @@ public class BlockedNumberProvider extends ContentProvider {
         if (blockReason == BlockedNumberContract.STATUS_NOT_BLOCKED && isBlocked(phoneNumber)) {
             blockReason = BlockedNumberContract.STATUS_BLOCKED_IN_LIST;
         }
+
+        if (blockReason != BlockedNumberContract.STATUS_NOT_BLOCKED
+                && isEmergencyNumber(phoneNumber)) {
+            blockReason = BlockedNumberContract.STATUS_NOT_BLOCKED;
+        }
+        /// @}
         return blockReason;
     }
 
